@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <title>英単語テスト（AIなし）</title>
+</head>
+<body>
+  <h1>英単語テスト</h1>
+
+  <div id="input-area">
+    <p>テストしたい英単語と意味を入力してください（例：apple,りんご）</p>
+    <textarea id="wordInput" rows="10" cols="40" placeholder="apple,りんご\nbanana,バナナ\ncat,猫"></textarea><br />
+    <button id="startTestBtn">テスト開始</button>
+  </div>
+
+  <div id="quiz-area" style="display:none;">
+    <p id="question"></p>
+    <input type="text" id="answerInput" placeholder="答えを入力" />
+    <button id="submitAnswerBtn">回答する</button>
+    <p id="result"></p>
+    <button id="nextQuestionBtn" style="display:none;">次の問題へ</button>
+    <button id="restartBtn" style="display:none;">最初から</button>
+  </div>
+
+<script>
+  const startTestBtn = document.getElementById('startTestBtn');
+  const submitAnswerBtn = document.getElementById('submitAnswerBtn');
+  const nextQuestionBtn = document.getElementById('nextQuestionBtn');
+  const restartBtn = document.getElementById('restartBtn');
+  const wordInput = document.getElementById('wordInput');
+  const question = document.getElementById('question');
+  const answerInput = document.getElementById('answerInput');
+  const result = document.getElementById('result');
+  const inputArea = document.getElementById('input-area');
+  const quizArea = document.getElementById('quiz-area');
+
+  let quizList = [];
+  let currentIndex = 0;
+
+  // 配列をシャッフルする関数（Fisher-Yatesアルゴリズム）
+  function shuffle(array) {
+    for (let i = array.length -1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i+1));
+      [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
+  }
+
+  startTestBtn.addEventListener('click', () => {
+    const lines = wordInput.value.trim().split('\n');
+    quizList = [];
+
+    for (let line of lines) {
+      const parts = line.split(',');
+      if(parts.length === 2){
+        quizList.push({word: parts[0].trim(), meaning: parts[1].trim()});
+      }
+    }
+
+    if(quizList.length === 0){
+      alert('単語と意味を正しく入力してください');
+      return;
+    }
+
+    quizList = shuffle(quizList);
+    currentIndex = 0;
+    inputArea.style.display = 'none';
+    quizArea.style.display = 'block';
+    showQuestion();
+  });
+
+  function showQuestion(){
+    result.textContent = '';
+    answerInput.value = '';
+    question.textContent = `${quizList[currentIndex].word}の意味は？`;
+    answerInput.focus();
+    submitAnswerBtn.style.display = 'inline-block';
+    nextQuestionBtn.style.display = 'none';
+    restartBtn.style.display = 'none';
+  }
+
+  submitAnswerBtn.addEventListener('click', () => {
+    const userAnswer = answerInput.value.trim();
+    if(userAnswer === ''){
+      alert('答えを入力してください');
+      return;
+    }
+
+    const correctAnswer = quizList[currentIndex].meaning;
+    if(userAnswer.toLowerCase() === correctAnswer.toLowerCase()){
+      result.textContent = '正解！';
+    } else {
+      result.textContent = `不正解。正しい答えは「${correctAnswer}」です。`;
+    }
+
+    submitAnswerBtn.style.display = 'none';
+    if(currentIndex < quizList.length -1){
+      nextQuestionBtn.style.display = 'inline-block';
+    } else {
+      restartBtn.style.display = 'inline-block';
+    }
+  });
+
+  nextQuestionBtn.addEventListener('click', () => {
+    currentIndex++;
+    showQuestion();
+  });
+
+  restartBtn.addEventListener('click', () => {
+    inputArea.style.display = 'block';
+    quizArea.style.display = 'none';
+    wordInput.value = '';
+  });
+</script>
+
+</body>
+</html>
